@@ -1,4 +1,6 @@
 /* 
+    UNA VEZ INGRESADO EL USUARIO
+
     VAMOS A SIMULAR UN SISTEMA DONDE
     UN OPERADOR DE UNA DROGUERIA PUEDE REALIZAR
     CIERTAS OPERACIONES RELACIONADAS CON EL INVENTARIO
@@ -107,7 +109,7 @@ class Producto {
 
     disminuirStock() {
         if((this.stock - egresoStock) < 0) {
-            alert(`El producto ${this.nombreProducto} no puede tener stock negativo. Debe reportar un stock no mayor a ${this.stock}`)
+            alert(`El producto ${this.nombreProducto} no puede tener/quedar con stock negativo.`)
         } else {
             this.stock -= egresoStock
         }
@@ -155,10 +157,6 @@ let i = 1, carritototal = 0, totalcarrito = 0, ventasTotales = 0, acumVentas = 0
 
 /* Start Funciones */
 
-function imprimirFacturaCliente (cliente, carrito, totalcarrito) {
-    console.log(`--- COMPROBANTE DE LA COMPRA ---\n\nCLIENTE:  ${cliente}\n\nProductos facturados:\n${carrito}\n\nTOTAL A PAGAR: $${totalcarrito}`)
-}
-
 function existenciaProducto (nombreProducto) {
     let index = (productos.findIndex(id => id.nombreProducto == nombreProducto))
                 if(index == -1){
@@ -172,7 +170,7 @@ function existenciaProducto (nombreProducto) {
                 }
 }
 
-// funcion para cerrar navs cuando se quiere seleccionar uno
+// funcion para cerrar navs cuando se abre otro
 function cerrarNavs() {
     if(cerrar == divIngreso.classList && divIngreso.classList == 'divs divIngreso'){
         divReporte.innerHTML = ""
@@ -332,7 +330,7 @@ botonIngreso.addEventListener('click', (e) => {
         divIngreso.classList.remove('divIngreso')
         sacarMostrarStock()  
     } else{
-        // Se genera el form para completar el ingreso de los productos
+        // al ser falso la condicion anterior, se genera el form para completar el ingreso de los productos
         e.preventDefault()
         cerrar = divIngreso.classList
         divIngreso.classList.add('divIngreso')
@@ -366,7 +364,7 @@ botonIngreso.addEventListener('click', (e) => {
                 <button type="submit" class="btn btn-operacion">Ingresar Producto</button>
             </form>
             `
-            // habilitamos el idForm para poder usar el submit y asi no se resete la pagina
+            // habilitamos el idForm para poder usar el submit
             const idForm = document.getElementById('idForm')
             idForm.addEventListener('submit', (e) => {
                 e.preventDefault()
@@ -377,26 +375,35 @@ botonIngreso.addEventListener('click', (e) => {
                 const stock = document.getElementById("stock").value
                 const sector = document.getElementById("sector").value
 
-                const producto = new Producto(nombreProducto, laboratorio, trazabilidad, costo, stock, sector)
-                productos.unshift(producto)
-                productos[0].aplicarPrecio()
-                productos[0].aumentarStock
-                idForm.reset()
-                console.table(productos)
+                /* si costo u stock negativos sale una alerta */
+                if(costo < 0 || stock < 0){
+                    Swal.fire({
+                        title: 'Datos no validos.',
+                        text: 'No se ha realizado el ingreso',
+                        icon: 'error'
+                    })
+                    idForm.reset()
+                } else {
+                    const producto = new Producto(nombreProducto, laboratorio, trazabilidad, costo, stock, sector)
+                    productos.unshift(producto)
+                    productos[0].aplicarPrecio()
+                    productos[0].aumentarStock
+                    idForm.reset()
+                    console.table(productos)
 
-                /* INSERTAMOS SWEATALERT AL HACER CLICK */
-                Swal.fire({
-                    title: 'Producto Ingresado.',
-                    html:
-                    `
-                    <p>Nombre: ${nombreProducto}</p>
-                    <p>GTIN: ${trazabilidad}</p>
-                    <p>Sector: ${sector}</p>
-                    `,
-                    icon: 'success'
+                    Swal.fire({
+                        title: 'Producto Ingresado.',
+                        html:
+                        `
+                        <p>Nombre: ${nombreProducto}</p>
+                        <p>GTIN: ${trazabilidad}</p>
+                        <p>Sector: ${sector}</p>
+                        `,
+                        icon: 'success'
+                    })
                 }
-                    
-                  )
+
+                
             })
     }
 })
@@ -404,8 +411,6 @@ botonIngreso.addEventListener('click', (e) => {
 
 
 /* seccion reporte */
-
-/*  */
 
 const divReporte = document.getElementById('divReporte')
 const botonReporte = document.getElementById('botonReporte')
@@ -445,14 +450,26 @@ botonReporte.addEventListener('click', (e) => {
             egresoStock = document.getElementById("stock").value
             const motivoReporte = document.getElementById('motivo').value
 
-            index = existenciaProducto(nombreProducto)
-            productos[index].disminuirStock(egresoStock)
-            reportes.push([nombreProducto, egresoStock, motivoReporte])
+            /* si egresoStock es negativo sale una alerta */
+            if(egresoStock < 0){
+                Swal.fire({
+                    title: 'Datos no validos.',
+                    text: 'No se ha realizado el reporte',
+                    icon: 'error'
+                })
+                idForm.reset()
+            } else {
+                index = existenciaProducto(nombreProducto)
+                productos[index].disminuirStock(egresoStock)
+                reportes.push([nombreProducto, egresoStock, motivoReporte])
 
 
-            console.log(reportes)
-            idForm.reset()
-            console.table(productos)
+                console.log(reportes)
+                idForm.reset()
+                console.table(productos)
+            }
+
+            
         })
     }
 })
@@ -493,11 +510,9 @@ botonFacturacion.addEventListener('click', (e) => {
                 <input type="number" class="form-control" id="stock" required>
             </div>
             <button type="submit" class="btn btn-operacion">Añadir al Carrito</button>
-            <button id="mostrarCarrito" type="button" class="btn btn-operacion">Mostrar Carrito</button>
         </form>
         `
 
-        
         const idForm = document.getElementById('idForm')
         idForm.addEventListener('submit', (e) => {
             e.preventDefault()
@@ -531,9 +546,6 @@ botonFacturacion.addEventListener('click', (e) => {
                 divCarrito.innerHTML =""
                 divCarrito.innerHTML += `
                     <div>
-                        <div class="mb-3">
-                            <h2 class="title-productos">Carrito</h2>  
-                        </div>
                         <div id="carrito${index}">
                             <h3>Cliente: ${cliente}</h3>
                             <p>${carrito.producto}  ---  ${carrito.cantidad[1]}  ---  $${carrito.precio[2]}\n</p>
@@ -545,105 +557,6 @@ botonFacturacion.addEventListener('click', (e) => {
                     </div>
                     `
             })
-
-            divFacturacion.innerHTML = `
-            <form id="idForm">
-                <div class="mb-3">
-                    <label for="nombreCliente" class="form-label">Cliente</label>
-                    <input type="text" class="form-control" id="nombreCliente">
-                </div>
-                <div class="mb-3">
-                    <label for="nombreProducto" class="form-label">Producto a facturar</label>
-                    <input type="text" class="form-control" id="nombreProducto" required>
-                </div>
-                <div class="mb-3">
-                    <label for="stock" class="form-label">Stock</label>
-                    <input type="number" class="form-control" id="stock" required>
-                </div>
-                <button type="submit" class="btn btn-operacion">Añadir al Carrito</button>
-                <button id="mostrarCarrito" type="button" class="btn btn-operacion">Mostrar Carrito</button>
-            </form>
-            `
-            
-            const idForm = document.getElementById('idForm')
-            idForm.addEventListener('submit', (e) => {
-                e.preventDefault()
-
-            const cliente = document.getElementById('nombreCliente').value
-            nombreProducto = document.getElementById("nombreProducto").value
-            egresoStock = document.getElementById("stock").value
-
-            index = existenciaProducto(nombreProducto)
-            
-            
-            totalcarrito += productos[index].metodoCarrito()
-            productos[index].previoCarrito()
-
-            
-            const nuevoCarrito = new Carrito(nombreProducto, productos[index].previoCarrito([1]), productos[index].previoCarrito([2]))
-
-            carrito.push(nuevoCarrito)
-            productos[index].disminuirStock()
-            
-            localStorage.setItem("carrito", JSON.stringify(carrito))
-            
-            
-            console.log(carrito)
-            console.log(totalcarrito)
-            console.table(productos)
-
-                const divCarrito = document.getElementById('divCarrito')
-                carrito.forEach((carrito, indice) =>{
-                    divCarrito.classList.add('divCarrito')
-                    divCarrito.innerHTML =""
-                    divCarrito.innerHTML += `
-                    <div class="mb-3">
-                        <h2 class="title-productos">Carrito</h2>
-                        <h3>${cliente}</h3>
-                    </div> 
-                    <div id="carrito${indice}">
-                        <p>${carrito[indice].producto}  ---  ${carrito[indice].cantidad[1]}  ---  $${carrito[indice].precio[2]}</p>
-                    </div>
-                    <div>
-                        <p>${totalcarrito}</p>
-                        <button type="button" class="btn btn-operacion" id="facturarTodo">Facturar Todo</button>
-                    </div>
-                    `
-                })
-            })
-
-            
-            
-            const botonCarrito = document.getElementById("mostrarCarrito")
-            botonCarrito.addEventListener('click', (e) =>{
-                if(divCarrito.classList == 'divs divCarrito'){
-                    e.preventDefault()
-                    divCarrito.innerHTML += ""
-                    divCarrito.classList.remove('divCarrito')
-                } else {
-                    carrito = JSON.parse(localStorage.getItem('carrito'))
-                    e.preventDefault()
-                    carrito.forEach((carrito, indice) =>{
-                        divCarrito.classList.add('divCarrito')
-                        carrito = JSON.parse(localStorage.getItem('carrito'))
-                        divCarrito.innerHTML =""
-                        divCarrito.innerHTML += `
-                        <div class="mb-3">
-                            <h2 class="title-productos">Carrito</h2>
-                            <h3>Cliente: ${cliente}</h3>
-                        </div> 
-                        <div id="carrito${indice}">
-                            <p>${carrito[indice].producto}  ---  ${carrito[indice].cantidad[1]}  ---  $${carrito[indice].precio[2]}</p>
-                        </div>
-                        <div>
-                            <p>${totalcarrito}</p>
-                            <button type="button" class="btn btn-operacion" id="facturar">Facturar Todo</button>
-                        </div>
-                        `
-                    })
-                }
-            })
-            
             const botonFacturar = document.getElementById('facturar')
             botonFacturar.addEventListener('click', () =>{
                 
@@ -660,9 +573,7 @@ botonFacturacion.addEventListener('click', (e) => {
                     <p>Precio Total: ${totalcarrito.toFixed(2)}</p>
                     `,
                     icon: 'success'
-                }
-                    
-                  )
+                })
 
                 ventasTotales += 1
                 acumVentas += totalcarrito
@@ -670,26 +581,17 @@ botonFacturacion.addEventListener('click', (e) => {
                 localStorage.setItem('carrito', JSON.stringify(carrito))
                 totalcarrito = 0
             })
-
-            const botonFacturarTodo = document.getElementById('facturarTodo')
-            botonFacturarTodo.addEventListener('click', () =>{
-                ventasTotales += 1
-                acumVentas += totalcarrito
-                carrito = []
-                localStorage.setItem('carrito', JSON.stringify(carrito))
-                totalcarrito = 0
-                divFacturacion.innerHTML = ""
-                divFacturacion.classList.remove("divFacturacion")
-                divCarrito.innerHTML=""
-            })
-        })
+    })
     }
 })
 
 
 /* seccion Resumen */
+
+/* brinda un resumen de las ventas realizadas, monto acumulado y del stock existente hasta el momento  */
 const botonResumen = document.getElementById('botonResumen')
 const divResumen = document.getElementById('divResumen')
+const divTitleProductos = document.getElementById("divTitleProductos")
 botonResumen.addEventListener('click', (e) => {
     if(divResumen.classList == 'divs divResumen'){
         e.preventDefault()

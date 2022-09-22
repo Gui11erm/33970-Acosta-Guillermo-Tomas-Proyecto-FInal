@@ -174,3 +174,9 @@ h3{
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: 18px;
 }
+
+#cerrarSesion {
+    font-size: 20px;
+    color: white;
+    margin: 2rem 0rem 0.5rem 85rem;
+}
