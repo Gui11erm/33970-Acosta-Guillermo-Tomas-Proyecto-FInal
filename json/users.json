@@ -6,5 +6,13 @@
         "lastname":"Acosta",
         "categoria":"operador",
         "password":1234
+    },
+    {
+        "id":"2",
+        "username":"eamero",
+        "name":"Emilio",
+        "lastname":"Amero",
+        "categoria":"operador",
+        "password":5678
     }
 ]

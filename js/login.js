@@ -8,11 +8,10 @@ const botonIngresar = document.getElementById('botonIngresar')
 const consultarUsuarios = async() => {
     const response = await fetch('/json/users.json')
     const users = await response.json()
-    console.log(users.username)
-    return users
+    console.log(users)
+    alertaError(true)
+    return users;
 }
-
-console.log(users)
 
 botonIngresar.addEventListener('click', (e) =>{
     e.preventDefault()
@@ -21,16 +20,40 @@ botonIngresar.addEventListener('click', (e) =>{
     accederSistema(username, password)
 })
 
-function accederSistema() {
+function alertaError(ocultar) {alerta.style.display = "block";
+    const alerta = document.getElementById("alertaUsuario");
+    if(ocultar == true){
+        alerta.style.display = "none";
+    } else {
+        alerta.style.display = "block";
+    }
+}
+
+function accederSistema(username, password) {
+    let ingreso = false
+
+    /* esto es asincronico */
     consultarUsuarios().then(users => {
-        
-        if (username == users.username && password == users.password) {
-            window.location.href = "/operador/operador.html"
-            console.log("funciona")
+    
+        users.forEach(element => {
+            if (username == element.username && password == element.password) {
+                window.location.href = "/operador/operador.html"
+                console.log("funciona")
+                ingreso = true
+                console.log(ingreso)
+                return
+            }
+        });
+
+        if(ingreso == false ){
+            
         } else {
-            alert("Datos ingresados incorrectos")
-            console.log(users.username)
+            alertaError(false)
         }
+        console.log(ingreso)
     })
+
+    console.log(username, password, ingreso)
+
 }
 
